@@ -1,0 +1,51 @@
+// Author: @patriciogv
+// Title: Dots Hillshading
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+#define PI 3.1415926535897932384626433832795
+
+uniform sampler2D u_tex0; // https://s3.amazonaws.com/elevation-tiles-prod/normal/11/386/803.png
+uniform vec2 u_tex0Resolution;
+
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+uniform float u_time;
+
+vec2 brickTile(vec2 _st, float _zoom){
+  _st *= _zoom;
+  if (fract(_st.y * 0.5) > 0.5){
+      _st.x += 0.5;
+  }
+  return fract(_st);
+}
+
+float circle(vec2 _st, float _radius){
+  vec2 pos = vec2(0.5)-_st;
+  _radius *= 0.75;
+  return 1.-smoothstep(_radius-(_radius*0.01),_radius+(_radius*0.01),dot(pos,pos)*3.14);
+}
+
+void main(){
+    vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    if (u_resolution.y < u_resolution.x ) {
+        st.y *= u_resolution.y/u_resolution.x;
+        st.y -= (u_resolution.y*.5-u_resolution.x*.5)/u_resolution.x;
+    } else {
+        st.x *= u_resolution.x/u_resolution.y;
+        st.x -= (u_resolution.x*.5-u_resolution.y*.5)/u_resolution.y;
+    }
+    
+    float t = -u_time*0.5;
+    vec4 tile = texture2D(u_tex0,st);
+    vec3 normal = tile.xyz*2.-1.;
+    float depth = tile.a;
+    
+    
+    float pct = abs(dot(normal,normalize(vec3(u_mouse/u_resolution-.5,1.))))*.8;
+  	vec3 color = vec3(circle(brickTile(st,80.), pct*pct*pct));
+    
+    gl_FragColor = vec4(color,1.0);
+}
