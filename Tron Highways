@@ -1,0 +1,70 @@
+// Author: @patriciogv
+// Title: Tron Highways
+
+#ifdef GL_OES_standard_derivatives
+#extension GL_OES_standard_derivatives : enable
+#endif
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+uniform float u_time;
+
+#define PI 3.14159265359
+#define TWO_PI 6.28318530718
+#define HALF_PI 1.57079632679 
+
+#define BACKGROUND_COLOR vec3(0.086,0.135,0.260)
+
+#define GLOW_COLOR vec3(0.000,0.535,0.630)*abs(sin(u_time))
+#define GLOW_BRIGHTNESS 1.154
+
+#define CAST_A_COLOR vec3(0.541,0.969,0.949)
+#define CAST_A_WIDTH 0.028
+#define CAST_A_DIST 0.196
+#define CAST_B_COLOR vec3(0.800,1.000,0.987)
+#define CAST_B_WIDTH 0.052
+#define CAST_B_DIST 0.268   
+
+// Antialiazed Step function
+// from http://webstaff.itn.liu.se/~stegu/webglshadertutorial/shadertutorial.html
+float aastep(float threshold, float value) {
+  #ifdef GL_OES_standard_derivatives
+  float afwidth = 0.7 * length(vec2(dFdx(value), dFdy(value)));
+  return smoothstep(threshold-afwidth, threshold+afwidth, value);
+  #else
+  return step(threshold, value);
+  #endif
+}
+
+float pulse (float x, float peak, float width) {
+    x = abs(x - peak);
+    if (x>width) return 0.0;
+    x /= width;
+    return 1.0 - x*x*(3.0-2.0*x);
+}
+
+void main() {
+    vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    if (u_resolution.y > u_resolution.x ) {
+        st.y *= u_resolution.y/u_resolution.x;
+        st.y -= (u_resolution.y*.5-u_resolution.x*.5)/u_resolution.x;
+    } else {
+        st.x *= u_resolution.x/u_resolution.y;
+        st.x -= (u_resolution.x*.5-u_resolution.y*.5)/u_resolution.y;
+    }
+    
+    vec4 color = vec4(vec3(0.),1.);
+    st.x = abs(st.x-.5);
+
+    color = vec4(vec3(GLOW_COLOR),1.)*(cos(st.x*PI)*GLOW_BRIGHTNESS);
+    color = mix(vec4(BACKGROUND_COLOR,1), color, aastep(CAST_B_DIST+CAST_B_WIDTH*.5, st.x));
+    color.rgb = mix(color.rgb, CAST_A_COLOR, aastep(.5, pulse(st.x, CAST_A_DIST, CAST_A_WIDTH)));
+    color.rgb = mix(color.rgb, CAST_B_COLOR, aastep(.5, pulse(st.x, CAST_B_DIST, CAST_B_WIDTH)));
+    color.a = 1.;
+    
+    gl_FragColor = color;
+}
