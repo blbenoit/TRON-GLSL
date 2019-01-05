@@ -14,9 +14,15 @@ Les shaders suivants sont ceux de base :
   - Dots Hillshading
   - Grid Animation
   
-  
-  
 Les shadeurs suivants sont "pimpés" en mode TRON :
+  - Tron Palette
+  - Tron Glow
+  - Tron Highways
+  - Tron smookytrail
+  - Tron Streamvoid
+  - Tron Hillshading
+  - Tron GrandCanyon III
+  - Tron Coast ripples
 
 
 J'en profite pour indiquer un excellent compedium de sites sur le sujet :
