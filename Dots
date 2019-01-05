@@ -1,0 +1,42 @@
+// Author: @patriciogv
+// Title: Dots
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+#define PI 3.14159265358979323846
+#define TWO_PI 6.28318530717958647693
+#define PHI 1.618033988749894848204586834
+
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+uniform float u_time;
+
+vec2 brickTile(vec2 _st, float _zoom){
+  _st *= _zoom;
+  if (fract(_st.y * 0.5) > 0.5){
+      _st.x += 0.5;
+  }
+  return fract(_st);
+}
+
+float circle(vec2 _st, float _radius){
+  vec2 pos = vec2(0.5)-_st;
+  _radius *= 0.75;
+  return 1.-smoothstep(_radius-(_radius*0.01),_radius+(_radius*0.01),dot(pos,pos)*3.14);
+}
+
+void main(void){
+    vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    if (u_resolution.y > u_resolution.x ) {
+        st.y *= u_resolution.y/u_resolution.x;
+    } else {
+        st.x *= u_resolution.x/u_resolution.y;
+    }
+    
+    st = brickTile(st,5.);
+  	vec3 color = vec3(circle(st, .1+(u_mouse.x/u_resolution.x)*.5));
+
+    gl_FragColor = vec4(color,1.0);    
+}
